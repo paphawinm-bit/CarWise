@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <html lang="th">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarWise - ค้นหารถและคำนวณความคุ้มค่า</title>
+    <title>Register - CarWise</title>
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
     <div class="bg-orb orb-1"></div>
     <div class="bg-orb orb-2"></div>
@@ -29,19 +27,16 @@
         <nav class="mobile-menu-nav">
             <a href="index.html">🔍 ค้นหารถ</a>
             <a href="oil.html">⛽ ราคาน้ำมัน</a>
-            <a href="quiz.html">🚗 หารถที่เข้ากับคุณ</a>
         </nav>
         <div class="mobile-menu-footer">
             <div id="mobileUserInfo" style="font-size:0.9rem;color:var(--text-secondary);">CarWise</div>
         </div>
     </div>
-
     <nav class="navbar">
         <div class="logo">CarWise <span class="badge">TH</span></div>
         <div class="nav-menu">
-            <a href="index.html" class="nav-link active">🔍 ค้นหารถ</a>
+            <a href="index.html" class="nav-link">🔍 ค้นหารถ</a>
             <a href="oil.html" class="nav-link">⛽ ราคาน้ำมัน</a>
-            <a href="quiz.html" class="nav-link">🚗 หารถที่เข้ากับคุณ</a>
         </div>
         <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Open menu">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20">
@@ -55,39 +50,50 @@
         </div>
     </nav>
 
-    <div class="hero">
-        <div class="hero-content">
-            <h1>ค้นหารถคู่ใจ <br><span class="highlight">คำนวณความคุ้มค่า</span></h1>
-            <p class="subtitle">เช็คสเปครถพร้อมคำนวณค่าน้ำมันเฉลี่ยต่อกิโลเมตร</p>
-
-            <div class="search-container">
-                <div class="search-box">
-                    <input type="text" id="searchInput" placeholder="เช่น Toyota Camry, Tesla, Honda Civic...">
-                    <button id="searchBtn">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </button>
+    <div class="login-page">
+        <div class="login-container">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-logo">
+                        <div class="logo-icon">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                        </div>
+                        <span>CarWise</span>
+                    </div>
+                    <h1 class="login-title">Create account</h1>
+                    <p class="login-subtitle">Register a new account to continue</p>
                 </div>
-            </div>
 
-            <div class="quick-tags">
-                <span>ยอดนิยม:</span>
-                <button onclick="quickSearch('Tesla')">Tesla</button>
-                <button onclick="quickSearch('Honda')">Honda</button>
-                <button onclick="quickSearch('Toyota')">Toyota</button>
-                <button onclick="quickSearch('BYD')">BYD</button>
+                <form class="login-form" onsubmit="registerUser(event)">
+                    <div class="form-group">
+                        <label class="form-label">Full name</label>
+                        <input id="reg-name" type="text" class="form-input" placeholder="Your full name" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input id="reg-email" type="email" class="form-input" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Password</label>
+                        <input id="reg-password" type="password" class="form-input" placeholder="Choose a password" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Confirm Password</label>
+                        <input id="reg-password-confirm" type="password" class="form-input" placeholder="Confirm password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Create account</button>
+                </form>
+
+                <div class="login-divider"><span>or</span></div>
+
+                <p class="login-footer">Already have an account? <a href="login.html">Sign in</a></p>
             </div>
         </div>
     </div>
 
-    <div class="container">
-        <div id="result" class="result-grid"></div>
-    </div>
-
     <script src="javascript.js"></script>
 </body>
-
 </html>

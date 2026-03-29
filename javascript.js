@@ -1,23 +1,25 @@
 // ==========================================
-// 1. ตั้งค่าราคากลาง (โชว์ทันทีไม่ต้องรอโหลด)
+// 1. ตั้งค่าราคากลาง
 // ==========================================
-// อ้างอิงราคาจากรูปภาพล่าสุดของคุณ เพื่อให้ใช้งานได้เลยแม้เน็ตหลุด
 let oilPrices = {
   gasohol95: 30.85,
+  gasoline95: 34.94,
   gasohol91: 30.48,
   e20: 29.14,
-  e85: 27.5, // ค่าประมาณการ
+  e85: 27.5,
   diesel: 29.94,
-  diesel_premium: 41.5,
+  premium_diesel: 41.5,
+  premium_gasohol_95: 35.29,
+  ngv: 15.0,
   electricity: 4.5,
 };
 
 document.addEventListener("DOMContentLoaded", () => {
   // 1. เทคนิคสำคัญ: สั่งโชว์ข้อมูลทันที! ไม่ต้องรอ API
-  renderOilPage();  
+  renderOilPage();
 
   // 2. แล้วค่อยแอบไปดึงข้อมูลจริงมาอัพเดททีหลัง (Background Update)
-  getOilPrices();
+  fetchOilPrices();
 
   // ตั้งค่าปุ่มค้นหา
   const searchBtn = document.getElementById("searchBtn");
@@ -27,6 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     searchBtn.addEventListener("click", searchCar);
   }
+  // render profile UI
+  try { renderUserProfile(); } catch (e) { /* ignore */ }
 });
 
 function quickSearch(term) {
@@ -37,9 +41,6 @@ function quickSearch(term) {
   }
 }
 
-// ==========================================
-// 2. ระบบค้นหารถ (เชื่อมต่อ Python)
-// ==========================================
 async function searchCar() {
   const input = document.getElementById("searchInput").value.trim();
   const resultDiv = document.getElementById("result");
@@ -50,18 +51,34 @@ async function searchCar() {
   }
 
   resultDiv.innerHTML =
-    '<div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #4a9eff;">🔄 กำลังค้นหาข้อมูล...</div>';
+    '<div style="grid-column: 1/-1; text-align: center; padding: 50px; color: #4a9eff;">🔄 กำลังค้นหาข้อมูลจาก Supabase...</div>';
+
+  // 1. นำ URL และ Key จากขั้นตอนที่ 4 มาใส่ตรงนี้
+  const SUPABASE_URL = "https://fyaqsdqvircjanlasxov.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ5YXFzZHF2aXJjamFubGFzeG92Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzNjUwMzcsImV4cCI6MjA4ODk0MTAzN30.pO9fF_ouzuOj5CbYhPZmCXMoVZFohFsk9cWj4Ur4dtQ";
+
+  // 2. สร้าง URL สำหรับค้นหา (ilike คือการค้นหาแบบไม่สนพิมพ์เล็ก/ใหญ่ เหมือนคำสั่ง LIKE ใน SQL)
+  const queryUrl = `${SUPABASE_URL}/rest/v1/cars?select=*&or=(brand.ilike.%25${input}%25,model.ilike.%25${input}%25)`;
 
   try {
-    // เชื่อมต่อ Python Server
-    const response = await fetch(
-      `https://sonbbq20.pythonanywhere.com/api/search?search=${encodeURIComponent(input)}`);
+    // 3. ยิงคำขอไปที่ Supabase โดยตรง (ไม่ต้องผ่าน Python)
+    const response = await fetch(queryUrl, {
+      method: "GET",
+      headers: {
+        apikey: SUPABASE_KEY,
+        Authorization: `Bearer ${SUPABASE_KEY}`,
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) throw new Error("Network response was not ok");
 
+    // ข้อมูลรถที่ได้กลับมา จะหน้าตาเหมือนตอนเขียน Python ทุกประการ!
     const cars = await response.json();
 
     if (cars.length > 0) {
+      // ระบบแสดงผลจะใช้โค้ดเดิมของคุณได้เลย ไม่ต้องแก้อะไร!
+      // หมายเหตุ: ตรงตัวแปร car.type อาจจะต้องแก้เป็น car.car_type ตามฐานข้อมูล
       displayResults(cars);
     } else {
       resultDiv.innerHTML = `
@@ -72,7 +89,7 @@ async function searchCar() {
     }
   } catch (error) {
     console.error("Error:", error);
-    resultDiv.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #ff6b6b;">⚠️ เชื่อมต่อฐานข้อมูลไม่ได้<br><small>อย่าลืมรัน 'python app.py'</small></div>`;
+    resultDiv.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: #ff6b6b;">⚠️ ไม่สามารถเชื่อมต่อฐานข้อมูลได้</div>`;
   }
 }
 
@@ -126,7 +143,7 @@ function displayResults(cars) {
             <div class="car-content">
                 <div class="car-title">
                     <h3>${car.brand} ${car.model}</h3>
-                    <span class="car-year" style="font-size:0.8rem;color:#4a9eff;">${car.type || "N/A"}</span>
+                    <span class="car-year" style="font-size:0.8rem;color:#4a9eff;">${car.car_type || "N/A"}</span>
                 </div>
                 <div class="fuel-cost-box">
                     <span class="cost-label">ต้นทุนเชื้อเพลิง</span>
@@ -145,41 +162,76 @@ function displayResults(cars) {
 }
 
 // ==========================================
-// 3. ระบบดึงราคาน้ำมัน 
+// 3. ระบบดึงราคาน้ำมัน
 // ==========================================
-async function getOilPrices() {
+async function fetchOilPrices() {
   const dateEl = document.getElementById("oilUpdateDate");
 
   // โชว์ว่ากำลังเช็คข้อมูล แต่ตัวเลขราคาขึ้นโชว์ไปแล้ว
   if (dateEl)
     dateEl.innerHTML = `สถานะ: <span style="color:#facc15">กำลังเช็คราคาล่าสุด...</span>`;
 
-  try {
-    const proxy = "https://corsproxy.io/?";
-    const apiurl = "https://api.chnwt.dev/thai-oil-api/latest";
-    // ตั้งเวลา Timeout แค่ 5 วินาทีพอ
+  const url = "https://api.chnwt.dev/thai-oil-api/latest";
+
+  const proxies = [
+    (u) => `https://api.allorigins.win/get?url=${encodeURIComponent(u)}`,
+    (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+    (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`,
+    (u) => `https://proxy.cors.sh/${u}`,
+  ];
+
+  // แปลง response จาก allorigins ที่ wrap ใน { contents: "..." }
+  const parseResponse = async (res, isAllOrigins) => {
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (isAllOrigins) {
+      const wrapper = await res.json();
+      return JSON.parse(wrapper.contents);
+    }
+    return await res.json();
+  };
+
+  // ลองทีละ proxy จนกว่าจะสำเร็จ
+  const tryFetch = async (buildUrl, isAllOrigins = false) => {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
+    try {
+      const res = await fetch(buildUrl(url), { signal: controller.signal });
+      clearTimeout(timeoutId);
+      return await parseResponse(res, isAllOrigins);
+    } catch (err) {
+      clearTimeout(timeoutId);
+      throw err;
+    }
+  };
 
-    const res = await fetch(proxy + encodeURIComponent(apiurl), {
-      signal: controller.signal,
-    });
-    clearTimeout(timeoutId);
+  let data = null;
+  for (let i = 0; i < proxies.length; i++) {
+    try {
+      const isAllOrigins = i === 0; // allorigins ต้อง parse contents
+      data = await tryFetch(proxies[i], isAllOrigins);
+      break;
+    } catch (err) {
+      console.warn(`Proxy ${i + 1} failed:`, err.message);
+    }
+  }
 
-    const data = await res.json();
-
-    if (data?.response?.stations?.ptt) {
+  if (data?.response?.stations?.ptt) {
+    try {
       const ptt = data.response.stations.ptt;
       const p = (v) => (v ? parseFloat(v.price || v) : 0);
 
-      // อัพเดทตัวแปรด้วยราคาจริง (Real-time)
       if (ptt.gasohol_95) oilPrices.gasohol95 = p(ptt.gasohol_95);
+      if (ptt.gasoline_95) oilPrices.gasoline95 = p(ptt.gasoline_95);
       if (ptt.gasohol_91) oilPrices.gasohol91 = p(ptt.gasohol_91);
       if (ptt.gasohol_e20) oilPrices.e20 = p(ptt.gasohol_e20);
       if (ptt.diesel_b7) oilPrices.diesel = p(ptt.diesel_b7);
       if (ptt.gasohol_e85) oilPrices.e85 = p(ptt.gasohol_e85);
+      if (ptt.premium_diesel) oilPrices.premium_diesel = p(ptt.premium_diesel);
+      if (ptt.premium_gasohol_95)
+        oilPrices.premium_gasohol_95 = p(ptt.premium_gasohol_95);
+      if (ptt.ngv) oilPrices.ngv = p(ptt.ngv);
+      if (ptt.electricity) oilPrices.electricity = p(ptt.electricity);
 
-      // สั่งวาดหน้าจอใหม่อีกครั้งด้วยราคาใหม่
       renderOilPage();
 
       if (dateEl) {
@@ -187,14 +239,20 @@ async function getOilPrices() {
           data.response.date || new Date().toLocaleDateString("th-TH");
         dateEl.innerHTML = `อัพเดทล่าสุด: <span style="color:#4ade80">${dateStr}</span>`;
       }
+    } catch (e) {
+      console.warn("Parse error:", e);
+      setOfflineDateLabel(dateEl);
     }
-  } catch (e) {
-    console.warn("ใช้ราคา Offline แทน:", e);
-    // ถ้าดึงไม่ได้ ไม่ต้องทำอะไร เพราะเราโชว์ราคา Offline ไปตั้งแต่แรกแล้ว
-    if (dateEl) {
-      const today = new Date().toLocaleDateString("th-TH");
-      dateEl.innerHTML = `อัพเดทล่าสุด: ${today} <span style="color:#94a3b8">(ราคาอ้างอิง)</span>`;
-    }
+  } else {
+    // ดึงไม่ได้ทุก proxy → ใช้ราคา offline เงียบๆ ไม่ขึ้น error
+    setOfflineDateLabel(dateEl);
+  }
+}
+
+function setOfflineDateLabel(dateEl) {
+  if (dateEl) {
+    const today = new Date().toLocaleDateString("th-TH");
+    dateEl.innerHTML = `อัพเดทล่าสุด: ${today} <span style="color:#94a3b8">(ราคาอ้างอิง)</span>`;
   }
 }
 
@@ -205,10 +263,18 @@ function renderOilPage() {
 
   const oils = [
     { n: "แก๊สโซฮอล์ 95", p: oilPrices.gasohol95, c: "#f59e0b" },
+    { n: "เบนซิน 95", p: oilPrices.gasoline95, c: "#ef4444" },
     { n: "แก๊สโซฮอล์ 91", p: oilPrices.gasohol91, c: "#10b981" },
     { n: "แก๊สโซฮอล์ E20", p: oilPrices.e20, c: "#0ea5e9" },
-    { n: "ดีเซล B7", p: oilPrices.diesel, c: "#6366f1" },
-    { n: "แก๊สโซฮอล์ E85", p: oilPrices.e85, c: "#8b5cf6" },
+    { n: "ดีเซล B7", p: oilPrices.diesel, c: "#484be9" },
+    { n: "แก๊สโซฮอล์ E85", p: oilPrices.e85, c: "#ec4899" },
+    {
+      n: "แก๊สโซฮอล์ 95 Premium",
+      p: oilPrices.premium_gasohol_95,
+      c: "#f43f5e",
+    },
+    { n: "ดีเซล Premium", p: oilPrices.premium_diesel, c: "#8b5cf6" },
+    { n: "NGV", p: oilPrices.ngv, c: "#7a7a7a" },
     { n: "ไฟฟ้า (EV)", p: oilPrices.electricity, c: "#00d2d3", u: "บาท/หน่วย" },
   ];
 
@@ -222,19 +288,126 @@ function renderOilPage() {
   });
 }
 
-function LoginSignin(){
-  const logInButton=document.getElementsByID('logInButton');
-  const logInForm=document.getElementById('login');
-  const signInButton=document.getElementById('signInButton');
-  const signInForm=document.getElementById('sign in')
+// ==========================================
+// 4. Simple client-side auth (localStorage)
+// ==========================================
 
-  logInButton.addEventListener('click',function(){
-    logInForm.style.display="block;"
-    signInForm.style.display="none"
-  })
+function getUsers() {
+  try {
+    const raw = localStorage.getItem("cw_users");
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
 
-  signInButton.addEventListener('click',function(){
-    logInForm.style.display="none"
-    signInForm.style.display="block"
-  })
+function saveUsers(users) {
+  localStorage.setItem("cw_users", JSON.stringify(users));
+}
+
+function registerUser(e) {
+  e.preventDefault();
+  const name = (document.getElementById("reg-name") || {}).value || "";
+  const email = (document.getElementById("reg-email") || {}).value || "";
+  const pw = (document.getElementById("reg-password") || {}).value || "";
+  const pw2 = (document.getElementById("reg-password-confirm") || {}).value || "";
+
+  if (!email || !pw || !name) return alert("กรุณากรอกข้อมูลให้ครบ");
+  if (pw !== pw2) return alert("รหัสผ่านไม่ตรงกัน");
+
+  const users = getUsers();
+  const exists = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+  if (exists) return alert("มีอีเมลนี้ในระบบแล้ว โปรดล็อกอินหรือลองอีเมลอื่น");
+
+  users.push({ name: name.trim(), email: email.trim().toLowerCase(), password: pw });
+  saveUsers(users);
+  alert("สมัครสมาชิกสำเร็จ กรุณาเข้าสู่ระบบ");
+  window.location.href = "login.html";
+}
+
+function loginUser(e) {
+  e.preventDefault();
+  const email = (document.getElementById("login-email") || {}).value || "";
+  const pw = (document.getElementById("login-password") || {}).value || "";
+  const remember = document.getElementById("remember") && document.getElementById("remember").checked;
+
+  if (!email || !pw) return alert("กรุณากรอกอีเมลและรหัสผ่าน");
+
+  const users = getUsers();
+  const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase() && u.password === pw);
+  if (!user) return alert("อีเมลหรือรหัสผ่านไม่ถูกต้อง");
+
+  // Save simple session
+  localStorage.setItem("cw_currentUser", JSON.stringify({ name: user.name, email: user.email }));
+  if (remember) localStorage.setItem("cw_remember", "1");
+  else localStorage.removeItem("cw_remember");
+
+  // Redirect to homepage
+  window.location.href = "index.html";
+}
+
+// Mobile menu controls
+function toggleMobileMenu() {
+  const overlay = document.querySelector('.mobile-menu-overlay');
+  const menu = document.querySelector('.mobile-menu');
+  if (!overlay || !menu) return;
+  const open = menu.classList.toggle('open');
+  overlay.classList.toggle('open', open);
+}
+
+function closeMobileMenu() {
+  const overlay = document.querySelector('.mobile-menu-overlay');
+  const menu = document.querySelector('.mobile-menu');
+  if (!overlay || !menu) return;
+  menu.classList.remove('open');
+  overlay.classList.remove('open');
+}
+
+// Close menu when pressing Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeMobileMenu();
+});
+
+// User profile helpers
+function getCurrentUser() {
+  try { const raw = localStorage.getItem('cw_currentUser'); return raw ? JSON.parse(raw) : null; } catch (e) { return null; }
+}
+
+function renderUserProfile() {
+  const user = getCurrentUser();
+  const area = document.getElementById('userArea');
+  const mobileFooter = document.querySelector('.mobile-menu-footer');
+  const mobileInfo = document.getElementById('mobileUserInfo');
+  if (area) {
+    if (user) {
+      area.innerHTML = `
+        <button class="user-btn" onclick="window.location.href='index.html'">
+          <div class="user-avatar">${(user.name||user.email||'U').charAt(0).toUpperCase()}</div>
+          <span class="user-name">${user.name}</span>
+        </button>
+        <a href="#" onclick="logout();return false;" class="btn-ghost">Logout</a>`;
+    } else {
+      area.innerHTML = `<a href="login.html" class="btn-ghost">Sign in</a>`;
+    }
+  }
+  if (mobileInfo) {
+    if (user) mobileInfo.innerHTML = `Signed in as <strong>${user.name}</strong> • <a href='#' onclick='logout();return false;'>Logout</a>`;
+    else mobileInfo.innerHTML = `<a href='login.html'>Sign in</a>`;
+  } else if (mobileFooter && user) {
+    // create mobileUserInfo if missing
+    const div = document.createElement('div');
+    div.id = 'mobileUserInfo';
+    div.style.fontSize = '0.95rem';
+    div.style.color = 'var(--text-secondary)';
+    div.innerHTML = `Signed in as <strong>${user.name}</strong> • <a href='#' onclick='logout();return false;'>Logout</a>`;
+    mobileFooter.prepend(div);
+  }
+}
+
+function logout() {
+  localStorage.removeItem('cw_currentUser');
+  localStorage.removeItem('cw_remember');
+  closeMobileMenu();
+  renderUserProfile();
+  window.location.href = 'login.html';
 }
