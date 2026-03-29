@@ -7,12 +7,12 @@
 <link rel="stylesheet" href="quiz.css">
 
 <style>
-/* ===== Responsive Fix ===== */
+/* ===== Google Form Style (Desktop First) ===== */
 
 body{
 margin:0;
-font-family:Arial, Helvetica, sans-serif;
-background:linear-gradient(135deg,#081a36,#0b2b50);
+font-family:'Prompt', Arial, sans-serif;
+background:#081a36;
 color:white;
 }
 
@@ -21,50 +21,54 @@ min-height:100vh;
 display:flex;
 flex-direction:column;
 align-items:center;
-text-align:center;
-padding:20px;
+padding:40px 20px;
 }
 
+/* BIG QUESTION BOX LIKE GOOGLE FORM */
 .form-grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-gap:20px;
+display:flex;
+flex-direction:column;
+gap:25px;
 width:100%;
-max-width:1000px;
-margin-top:20px;
+max-width:800px;
 }
 
 .card{
 background:#0f2a4a;
-padding:20px;
-border-radius:12px;
+padding:30px;
+border-radius:15px;
 text-align:left;
-box-shadow:0 8px 20px rgba(0,0,0,0.4);
+box-shadow:0 8px 25px rgba(0,0,0,0.5);
 }
 
 .card h3{
-color:#3fa9ff;
-font-size:16px;
+color:#66c0ff;
+font-size:20px;
+margin-bottom:15px;
 }
 
 .card label{
 display:block;
-margin:6px 0;
+margin:10px 0;
+font-size:16px;
 cursor:pointer;
-font-size:14px;
+}
+
+/* BUTTONS CENTER */
+.calc-btn, .back-btn{
+margin-top:20px;
+padding:15px 40px;
+font-size:18px;
+border-radius:30px;
+cursor:pointer;
+width:100%;
+max-width:400px;
 }
 
 .calc-btn{
-margin-top:25px;
-padding:14px 30px;
-font-size:16px;
 background:#3fa9ff;
 border:none;
-border-radius:30px;
 color:white;
-cursor:pointer;
-width:90%;
-max-width:300px;
 }
 
 .calc-btn:hover{
@@ -72,15 +76,9 @@ background:#5bb6ff;
 }
 
 .back-btn{
-margin-top:10px;
-padding:12px 30px;
 background:transparent;
 border:1px solid #3fa9ff;
 color:#3fa9ff;
-border-radius:30px;
-cursor:pointer;
-width:90%;
-max-width:300px;
 }
 
 .back-btn:hover{
@@ -89,17 +87,44 @@ color:white;
 }
 
 .result-box{
-margin-top:20px;
+margin-top:30px;
 background:#0f2a4a;
-padding:20px;
+padding:30px;
 border-radius:15px;
-width:90%;
-max-width:500px;
-font-size:18px;
+width:100%;
+max-width:700px;
+font-size:20px;
+line-height:1.6;
 }
 
 .hidden{
 display:none;
+}
+
+/* ===== MOBILE (keep same style, just smaller) ===== */
+@media (max-width:768px){
+
+.page{
+padding:20px 10px;
+}
+
+.card{
+padding:20px;
+}
+
+.card h3{
+font-size:18px;
+}
+
+.card label{
+font-size:15px;
+}
+
+.calc-btn, .back-btn{
+font-size:16px;
+padding:12px;
+}
+
 }
 
 /* ===== Mobile Adjust ===== */
