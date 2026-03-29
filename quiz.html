@@ -12,7 +12,7 @@
 body{
 margin:0;
 font-family:'Prompt', Arial, sans-serif;
-background:#081a36;
+background:#0f172a;
 color:white;
 }
 
@@ -145,14 +145,50 @@ padding:15px;
 </head>
 
 <body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
 
-<!-- QUIZ PAGE -->
-<div id="quizPage" class="page">
+    <div class="mobile-menu-overlay" onclick="closeMobileMenu()"></div>
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path
+                            d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+                    </svg>
+                </div>
+                CarWise
+            </a>
+            <button class="mobile-menu-close" onclick="closeMobileMenu()">✕</button>
+        </div>
+        <nav class="mobile-menu-nav">
+            <a href="index.html" class="nav-link">
+                <img src="icon-images\car.png" alt="Search" class="nav-icon">
+                ค้นหารถ
+            </a>
+            <a href="oil.html" class="nav-link">
+                <img src="icon-images\oil-barrel.png" alt="Oil" class="nav-icon">
+                ราคาน้ำมัน
+            </a>
+            <a href="quiz.html" class="nav-link active">
+                <img src="icon-images/ideas.png" alt="Quiz" class="nav-icon">
+                หารถที่เข้ากับคุณ
+            </a>
+        </nav>
+        <div class="mobile-menu-footer">
+            <div id="mobileUserInfo" style="font-size:0.9rem;color:var(--text-secondary);">CarWise</div>
+        </div>
+    </div>
 
 <h1>🚗 คำถามเพื่อหารถที่เหมาะกับคุณ</h1>
 <p>ตอบคำถามเพื่อค้นหารถที่เหมาะกับคุณ</p>
 
-<div class="form-grid">
+        <h1>
+            <img src="icon-images/tablet.png" alt="Quiz" class="logo-icon">
+            คำถามเพื่อหารถที่เหมาะกับคุณ
+        </h1>
+        <p>ตอบคำถามต่อไปนี้ เพื่อหารถที่เข้ากับคุณ</p>
 
 <div class="card">
 <h3>คุณใช้รถบ่อยแค่ไหน</h3>
@@ -228,15 +264,36 @@ padding:15px;
 <label><input type="radio" name="design" value="technology"> โมเดิร์น</label>
 </div>
 
-</div>
+            <div class="card">
+                <h3>คุณชอบรถดีไซน์ประมาณไหน</h3>
+                <label><input type="radio" name="design" value="comfort" checked> หรูหรา</label>
+                <label><input type="radio" name="design" value="performance"> สปอร์ด</label>
+                <label><input type="radio" name="design" value="suv"> ทนทาน</label>
+                <label><input type="radio" name="design" value="technology"> โมเดิล</label>
+            </div>
+            <div class="card">
+                <h3>งบประมาณที่คุณตั้งไว้ (บาท)</h3>
+                <select id="budgetSelect"
+                    style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(33, 32, 32, 0.2); color: #fff; margin-top: 10px;">
+                    <option value="1000000" class="option">ไม่เกิน 1 ล้านบาท</option>
+                    <option value="2000000" class="option" selected>ไม่เกิน 2 ล้านบาท</option>
+                    <option value="3000000" class="option">ไม่เกิน 3 ล้านบาท</option>
+                    <option value="5000000" class="option">ไม่เกิน 5 ล้านบาท</option>
+                    <option value="99999999" class="option">ไม่จำกัดงบประมาณ</option>
+                </select>
+            </div>
+        </div>
+        <button class="calc-btn" onclick="calculateQuiz()">ดูผลลัพธ์</button>
 
 <button class="calc-btn" onclick="calculateQuiz()">ดูผลลัพธ์</button>
 <button class="back-btn" onclick="window.location.href='index.html'">⬅ กลับหน้า CarWise</button>
 
-</div>
+        <div id="quizResult" class="result-box"></div>
+        <div id="recommendedContainer"></div>
 
-<!-- RESULT PAGE -->
-<div id="resultPage" class="page hidden">
+        <button class="calc-btn" onclick="goBack()">
+            <img src="icon-images/back.png" alt="Quiz" class="nav-icon" style="bottom: 8px;">
+            ทำแบบทดสอบใหม่</button>
 
 <h1>🚗 ผลลัพธ์ของคุณ</h1>
 <div id="quizResult" class="result-box"></div>
@@ -249,4 +306,5 @@ padding:15px;
 <script src="quiz.js"></script>
 
 </body>
+
 </html>
